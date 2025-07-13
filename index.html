@@ -1,0 +1,662 @@
+<!-- <!DOCTYPE html> 
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mousavi server</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <style>
+    body { font-family: system-ui, sans-serif; text-align: center; padding: 2rem; background: #a4c1ff; }
+    input[type="text"] {
+      padding: 1rem;
+      font-size: 1.2rem;
+      width: 300px;
+      text-align: center;
+      direction: ltr;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.7rem 2rem;
+      font-size: 1rem;
+      background-color: #044c00;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #output {
+      margin-top: 2rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+      direction: ltr;
+    }
+  </style>
+</head>
+<body>
+  <h1>HTCP password</h1>
+  <p>Enter HTCP number (must be 12 numbers):</p>
+  <input type="text" id="codeInput" maxlength="12" placeholder="For example : 123456789012">
+  <br>
+  <button onclick="generateCode()">Get HTCP Password</button>
+  <div id="output"></div>
+
+  <script>
+    function generateSecretCode(input) {
+      let seed = 0;
+      for (let i = 0; i < input.length; i++) {
+        seed += input.charCodeAt(i) * (i + 7);
+        seed = seed ^ (seed << 3);
+      }
+      const chars = '123456789';
+      let code = '';
+      for (let i = 0; i < 12; i++) {
+        seed = (seed * 31 + i * 20) % 1e9;
+        let index = Math.abs(seed % chars.length);
+        code += chars[index];
+      }
+      return code;
+    }
+
+    function generateCode() {
+      const input = document.getElementById("codeInput").value;
+      if (!/^\d{12}$/.test(input)) {
+        document.getElementById("output").textContent = "Please enter only 12 numbers (no letters)";
+        return;
+      }
+      const result = generateSecretCode(input);
+      document.getElementById("output").textContent = `Your code: ${result}`;
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('Service Worker Registered'))
+          .catch(err => console.log('Service Worker Failed', err));
+      });
+    }
+  </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTCP Password Generator</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4a00e0" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #4a00e0, #8e2de2);
+      color: #fff;
+      text-align: center;
+      padding: 2rem;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+
+    input[type="text"] {
+      padding: 1rem;
+      font-size: 1.2rem;
+      width: 90%;
+      max-width: 320px;
+      border: 2px solid transparent;
+      border-radius: 14px;
+      margin-top: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      text-align: center;
+      direction: ltr;
+      transition: border 0.3s ease;
+    }
+
+    input.invalid {
+      border-color: red;
+    }
+
+    button {
+      margin-top: 1.2rem;
+      padding: 0.8rem 2.5rem;
+      font-size: 1rem;
+      background-color: #00c853;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    /* <button id="generateBtn" onclick="generateCode()" disabled>Generate Password</button> */
+
+
+    button:hover {
+      background-color: #009624;
+    }
+
+    #output {
+      margin-top: 2rem;
+      font-size: 1.4rem;
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    #error {
+      color: red;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 500px) {
+      h1 { font-size: 2rem; }
+      input, button { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <h1>HTCP Password Generator</h1>
+  <p>Please enter a 12-digit HTCP number:</p>
+  <input type="text" id="codeInput" maxlength="12" placeholder="for example : 123456789012" />
+  <div id="error"></div>
+  <br />
+  <button onclick="generateCode()">Generate Password</button>
+  <div id="output"></div>
+
+  <script>
+    function generateSecretCode(input) {
+      let seed = 0;
+      for (let i = 0; i < input.length; i++) {
+        seed += input.charCodeAt(i) * (i + 7);
+        seed = seed ^ (seed << 3);
+      }
+      const chars = '123456789';
+      let code = '';
+      for (let i = 0; i < 12; i++) {
+        seed = (seed * 31 + i * 20) % 1e9;
+        let index = Math.abs(seed % chars.length);
+        code += chars[index];
+      }
+      return code;
+    }
+    document.getElementById("codeInput").addEventListener("keypress", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault(); // جلوگیری از رفتار پیش‌فرض فرم (اگه باشه)
+        generateCode(); // اجرای تابع مثل کلیک روی دکمه
+      }
+});
+
+
+    function generateCode() {
+      const inputEl = document.getElementById("codeInput");
+      const errorEl = document.getElementById("error");
+      const outputEl = document.getElementById("output");
+
+      const input = inputEl.value;
+
+      if (!/^\d{12}$/.test(input)) {
+        errorEl.textContent = "❌ Invalid input! Please enter exactly 12 digits.";
+        inputEl.classList.add("invalid");
+        outputEl.textContent = "";
+        return;
+      }
+
+      inputEl.classList.remove("invalid");
+      errorEl.textContent = "";
+
+      const result = generateSecretCode(input);
+      outputEl.textContent = `✅ Your HTCP password: ${result}`;
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('✅ Service Worker Registered'))
+          .catch(err => console.log('❌ Service Worker Registration Failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HTCP Generator</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #a4c1ff;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="text"] {
+      padding: 1rem;
+      font-size: 1.2rem;
+      width: 300px;
+      text-align: center;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: #333;
+    }
+
+    button {
+      margin-top: 1rem;
+      padding: 0.7rem 2rem;
+      font-size: 1rem;
+      background-color: #044c00;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+
+    #output {
+      margin-top: 2rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>HTCP Password Generator</h1>
+  <p>Enter a 12-digit number:</p>
+  <input type="text" id="codeInput" maxlength="12" placeholder="Example: 123456789012" />
+  <br />
+  <button id="generateBtn" onclick="generateCode()" disabled>Generate Password</button>
+  <div id="output"></div>
+
+  <script>
+    function encodeHTCP(input) {
+      let seed = 987654321;
+      for (let i = 0; i < input.length; i++) {
+        seed ^= (parseInt(input[i]) + i) * 37;
+        seed = (seed * 31 + i * 17) % 1e9;
+      }
+      const chars = "1234567890";
+      let encoded = "";
+      for (let i = 0; i < 12; i++) {
+        seed = (seed * 33 + i * 13) % 1e9;
+        const index = Math.abs(seed % chars.length);
+        encoded += chars[index];
+      }
+      return encoded;
+    }
+
+    const inputEl = document.getElementById("codeInput");
+    const buttonEl = document.getElementById("generateBtn");
+    const outputEl = document.getElementById("output");
+
+    inputEl.addEventListener("input", () => {
+      if (/^\d{12}$/.test(inputEl.value)) {
+        buttonEl.disabled = false;
+        outputEl.textContent = "";
+      } else {
+        buttonEl.disabled = true;
+      }
+    });
+
+    inputEl.addEventListener("keypress", (e) => {
+      if (e.key === "Enter" && !buttonEl.disabled) {
+        generateCode();
+      }
+    });
+
+    function generateCode() {
+      const input = inputEl.value;
+      if (!/^\d{12}$/.test(input)) {
+        outputEl.textContent = "Please enter exactly 12 digits.";
+        outputEl.className = "error";
+        return;
+      }
+      const result = encodeHTCP(input);
+      outputEl.textContent = `Your code: ${result}`;
+      outputEl.className = "";
+    }
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js")
+          .then(reg => console.log("Service Worker registered"))
+          .catch(err => console.error("Service Worker failed", err));
+      });
+    }
+  </script>
+</body>
+</html> -->
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HTCP Generator</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#6A0DAD" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: linear-gradient(to bottom right, #6A0DAD, #a16ae8);
+      color: #fff;
+      text-align: center;
+      padding: 2rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"] {
+      padding: 1rem;
+      font-size: 1.2rem;
+      width: 300px;
+      text-align: center;
+      border: 2px solid #ccc;
+      border-radius: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #fff;
+    }
+
+    button {
+      margin-top: 1rem;
+      padding: 0.7rem 2rem;
+      font-size: 1rem;
+      background-color: #fff;
+      color: #6A0DAD;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    #output {
+      margin-top: 2rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .error {
+      color: #ff4d4d;
+    }
+  </style>
+</head>
+<body>
+  <h1>HTCP Password Generator</h1>
+  <p>Enter a 12-digit number:</p>
+  <input type="text" id="codeInput" maxlength="12" placeholder="e.g. 123456789012" />
+  <br />
+  <button id="generateBtn" onclick="generateCode()" disabled>Generate Password</button>
+  <div id="output"></div>
+
+  <script>
+    function encodeHTCP(input) {
+      let seed = 987654321;
+      for (let i = 0; i < input.length; i++) {
+        seed ^= (parseInt(input[i]) + i) * 37;
+        seed = (seed * 31 + i * 17) % 1e9;
+      }
+      const chars = "1234567890";
+      let encoded = "";
+      for (let i = 0; i < 12; i++) {
+        seed = (seed * 33 + i * 13) % 1e9;
+        const index = Math.abs(seed % chars.length);
+        encoded += chars[index];
+      }
+      return encoded;
+    }
+
+    const inputEl = document.getElementById("codeInput");
+    const buttonEl = document.getElementById("generateBtn");
+    const outputEl = document.getElementById("output");
+
+    inputEl.addEventListener("input", () => {
+      if (/^\d{12}$/.test(inputEl.value)) {
+        buttonEl.disabled = false;
+        outputEl.textContent = "";
+        outputEl.className = "";
+      } else {
+        buttonEl.disabled = true;
+      }
+    });
+
+    inputEl.addEventListener("keypress", (e) => {
+      if (e.key === "Enter" && !buttonEl.disabled) {
+        generateCode();
+      }
+    });
+
+    function generateCode() {
+      const input = inputEl.value;
+      if (!/^\d{12}$/.test(input)) {
+        outputEl.textContent = "Please enter exactly 12 digits.";
+        outputEl.className = "error";
+        return;
+      }
+      const result = encodeHTCP(input);
+      outputEl.textContent = `Your code: ${result}`;
+      outputEl.className = "";
+    }
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js")
+          .then(() => console.log("Service Worker registered"))
+          .catch(err => console.error("Service Worker failed", err));
+      });
+    }
+  </script>
+</body>
+</html> -->
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HTCP Password Generator</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#6A0DAD" />
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: linear-gradient(135deg, #6A0DAD, #a16ae8);
+      color: white;
+      text-align: center;
+      padding: 2rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"] {
+      width: 300px;
+      padding: 1rem;
+      font-size: 1.2rem;
+      text-align: center;
+      border-radius: 20px;
+      border: 2px solid #88a;
+      background-color: #a9b9ad; /* سبز خاکستری وقتی غیرفعال */
+      color: #555;
+      outline: none;
+      transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+      pointer-events: none;
+    }
+
+    input[type="text"].active {
+      background-color: white;
+      color: black;
+      border-color: #6A0DAD;
+      pointer-events: auto;
+    }
+
+    button {
+      margin-top: 1rem;
+      padding: 0.7rem 2rem;
+      font-size: 1rem;
+      border-radius: 12px;
+      border: none;
+      font-weight: bold;
+      cursor: not-allowed;
+      background-color: #ddd;
+      color: #999;
+      transition: background-color 0.3s, color 0.3s, cursor 0.3s;
+    }
+
+    button.enabled {
+      cursor: pointer;
+      background-color: white;
+      color: #6A0DAD;
+    }
+
+    #output {
+      margin-top: 2rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+      min-height: 2rem;
+    }
+
+    .error {
+      color: #ff4444;
+    }
+  </style>
+</head>
+<body>
+  <h1>HTCP Password Generator</h1>
+  <p>Enter a 12-digit number:</p>
+  <input type="text" id="codeInput" maxlength="12" placeholder="e.g. 123456789012" />
+  <br />
+  <button id="generateBtn" disabled>Generate Password</button>
+  <div id="output"></div>
+
+  <script>
+    const inputEl = document.getElementById("codeInput");
+    const buttonEl = document.getElementById("generateBtn");
+    const outputEl = document.getElementById("output");
+
+    function encodeHTCP(input) {
+      let seed = 987654321;
+      for (let i = 0; i < input.length; i++) {
+        seed ^= (parseInt(input[i]) + i) * 37;
+        seed = (seed * 31 + i * 17) % 1e9;
+      }
+      const chars = "1234567890";
+      let encoded = "";
+      for (let i = 0; i < 12; i++) {
+        seed = (seed * 33 + i * 13) % 1e9;
+        const index = Math.abs(seed % chars.length);
+        encoded += chars[index];
+      }
+      return encoded;
+    }
+
+    inputEl.addEventListener("input", () => {
+      if (/^\d{12}$/.test(inputEl.value)) {
+        buttonEl.disabled = false;
+        buttonEl.classList.add("enabled");
+        inputEl.classList.add("active");
+        outputEl.textContent = "";
+        outputEl.className = "";
+      } else {
+        buttonEl.disabled = true;
+        buttonEl.classList.remove("enabled");
+        inputEl.classList.remove("active");
+        outputEl.textContent = "";
+        outputEl.className = "";
+      }
+    });
+
+    inputEl.addEventListener("keypress", (e) => {
+      if (e.key === "Enter" && !buttonEl.disabled) {
+        generateCode();
+      }
+    });
+
+    function generateCode() {
+      const input = inputEl.value;
+      if (!/^\d{12}$/.test(input)) {
+        outputEl.textContent = "Please enter exactly 12 digits.";
+        outputEl.className = "error";
+        return;
+      }
+      const result = encodeHTCP(input);
+      outputEl.textContent = `Your code: ${result}`;
+      outputEl.className = "";
+    }
+
+    buttonEl.addEventListener("click", generateCode);
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js")
+          .then(() => console.log("Service Worker registered"))
+          .catch(err => console.error("Service Worker failed", err));
+      });
+    }
+  </script>
+</body>
+</html> -->
+
+
